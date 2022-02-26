@@ -1,0 +1,1 @@
+# F58KQ8_Adatbazis2_Gyak
