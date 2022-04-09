@@ -1,0 +1,28 @@
+Etelek tabla:
+Azonosito: 	 Kis ar: 	 Nagy ar: 	 Tipus: 	 Nev:
+-------------------------------------------------------------------------------------------------------------------
+1		1610		3310		Pizza		Margareta
+2		2050		4310		Pizza		4sajtos
+3		1550		2500		Salata		Cezar Salata
+4		2120		3160		Husetel		Gyros tal
+5		2120		3160		Husetel		Cordon Blue box
+6		750		1120		Desszert		Turogomboc
+
+Akciok tabla:
+Azonosito: 	 Learazas: 	 Honap: 
+-------------------------------------------------------------------------------------------------------------------
+1		40% 		1
+2		50% 		6
+4		50% 		12
+5		20% 		2
+3		30% 		1
+
+Megrendeles tabla:
+Azonosito: 	 Datum: 		 Megrendelo: 		 Cim: 		 Telefon:
+-------------------------------------------------------------------------------------------------------------------
+1  		0022-03-08		Juhasz akos		062011111	Miskolc_xy_utca-1
+2  		0021-12-20		Kis Pista		0620122222	Miskolc_Ady_Endre_utca-13
+3  		0021-12-02		Nagy Greta		06203145160	Miskolc_Kuruc_utca-22
+4  		0021-01-01		Kis Pista		0630667708	Miskolc_Ady_Endre_utca-13
+5  		0022-03-10		Kozepes Karoly		0620198765	Miskolc_Kuruc_utca-11
+6  		0022-06-13		Kis Pista		0630611220	Miskolc_Harsfa_utca-14
