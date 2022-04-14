@@ -7,6 +7,9 @@ import pack.ErKapcsolo;
 
 import java.sql.*;
 import java.sql.Date;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 //fájlbaíráshoz:
@@ -52,60 +55,83 @@ public class Run {
 		
 	//create Table 1.
 	public static void createÉtelTable(Connection conn) throws SQLException {
-		PreparedStatement prstmt = conn.prepareStatement(""
-				+ "CREATE TABLE etel("
-				+ "eid int primary key,"
-				+ "kisar int,"
-				+ "nagyar int,"
-				+ "tipus varchar2(200),"
-				+ "nev varchar2(200)"
-				+ ")");
-		prstmt.executeUpdate();
+		if (tableExists(conn, "ETEL")==false) {
+			
+			PreparedStatement prstmt = conn.prepareStatement(""
+					+ "CREATE TABLE etel("
+					+ "eid int primary key,"
+					+ "kisar int,"
+					+ "nagyar int,"
+					+ "tipus varchar2(200),"
+					+ "nev varchar2(200)"
+					+ ")");
+			prstmt.executeUpdate();
+			
+			
+			System.out.println("Etel tabla letrehozva!");
+		}
+		else {
+			System.out.println("Etel tabla mar letezik!");
+		}
 		
-		System.out.println("Etel tabla letrehozva!");
 	}
 	
 	//create Table 2.
 	public static void createAkciokTable(Connection conn) throws SQLException {
-		PreparedStatement prstmt = conn.prepareStatement(""
-				+ "CREATE TABLE akciok("
-				+ "eid int,"
-				+ "foreign key(eid) references etel(eid),"
-				+ "learazas int,"
-				+ "honap int"
-				+ ")");
-		prstmt.executeUpdate();
-		
-		System.out.println("Akciok tabla letrehozva!");
+		if (tableExists(conn, "AKCIOK")==false) {
+			PreparedStatement prstmt = conn.prepareStatement(""
+					+ "CREATE TABLE akciok("
+					+ "eid int,"
+					+ "foreign key(eid) references etel(eid),"
+					+ "learazas int,"
+					+ "honap int"
+					+ ")");
+			prstmt.executeUpdate();
+			
+			System.out.println("Akciok tabla letrehozva!");
+		}
+		else {
+			System.out.println("Akciok tabla mar letezik!");
+		}
 	}
 	
 	//create Table 3.
 	public static void createMegrendelesTable(Connection conn) throws SQLException {
-		PreparedStatement prstmt = conn.prepareStatement(""
-				+ "CREATE TABLE megrendeles("
-				+ "mid int primary key,"
-				+ "datum date,"
-				+ "megrendelo varchar2(200),"
-				+ "cim varchar2(200),"
-				+ "telefon varchar2(200)"
-				+ ")");
-		prstmt.executeUpdate();
-		
-		System.out.println("Megrendeles tabla letrehozva!");
+		if (tableExists(conn, "MEGRENDELES")==false) {
+			PreparedStatement prstmt = conn.prepareStatement(""
+					+ "CREATE TABLE megrendeles("
+					+ "mid int primary key,"
+					+ "datum date,"
+					+ "megrendelo varchar2(200),"
+					+ "cim varchar2(200),"
+					+ "telefon varchar2(200)"
+					+ ")");
+			prstmt.executeUpdate();
+			
+			System.out.println("Megrendeles tabla letrehozva!");
+		}
+		else {
+			System.out.println("Megrendeles tabla mar letezik!");
+		}
 	}		
 		
 	//create Table 4.
 	public static void createErKapcsoloTable(Connection conn) throws SQLException {
-		PreparedStatement prstmt = conn.prepareStatement(""
-				+ "CREATE TABLE er_kapcsolo("
-				+ "eid int,"
-				+ "foreign key(eid) references etel(eid),"
-				+ "mid int,"
-				+ "foreign key(mid) references megrendeles(mid)"
-				+ ")");
-		prstmt.executeUpdate();
-		
-		System.out.println("E-R kapcsolo tabla letrehozva!");
+		if (tableExists(conn, "ERKAPCSOLO")==false) {
+			PreparedStatement prstmt = conn.prepareStatement(""
+					+ "CREATE TABLE erKapcsolo("
+					+ "eid int,"
+					+ "foreign key(eid) references etel(eid),"
+					+ "mid int,"
+					+ "foreign key(mid) references megrendeles(mid)"
+					+ ")");
+			prstmt.executeUpdate();
+			
+			System.out.println("E-R kapcsolo tabla letrehozva!");
+		}
+		else {
+			System.out.println("erKapcsolo tabla mar letezik!");
+		}
 	}		
 		
 	//tabla feltoltes 1.
@@ -147,7 +173,7 @@ public class Run {
 	
 	//tabla feltoltes 4.
 	public static void addErKapcsolo (Connection conn, ErKapcsolo erKapcsolo) throws SQLException {
-		PreparedStatement prstmt = conn.prepareStatement("INSERT INTO er_kapcsolo VALUES( ?, ?)");
+		PreparedStatement prstmt = conn.prepareStatement("INSERT INTO erKapcsolo VALUES( ?, ?)");
 		prstmt.setInt(1, erKapcsolo.getEid());
 		prstmt.setInt(2, erKapcsolo.getMid());
 		prstmt.executeUpdate();
@@ -207,7 +233,7 @@ public class Run {
 		System.out.println("-----------------------------------------------------------------------");
 		
 		PreparedStatement prstmt = conn.prepareStatement(""
-				+ "SELECT * FROM etel INNER JOIN er_kapcsolo ON etel.eid = er_kapcsolo.eid INNER JOIN megrendeles ON megrendeles.mid=er_kapcsolo.mid WHERE megrendelo=?");
+				+ "SELECT * FROM etel INNER JOIN erKapcsolo ON etel.eid = erKapcsolo.eid INNER JOIN megrendeles ON megrendeles.mid=erKapcsolo.mid WHERE megrendelo=?");
 		prstmt.setString(1, megrendelo2);		
 		ResultSet rs = prstmt.executeQuery();
 		
@@ -260,9 +286,25 @@ public class Run {
 		prstmt.close();
 	}
 	
+	//adatok módosítása 3. - Megrendeles
+		public static void updateMegrendeles(Connection conn, int mid, Date datum, String megrendelo, String cim, String telefon) throws SQLException {
+			PreparedStatement prstmt = conn.prepareStatement("UPDATE megrendeles SET datum=?, megrendelo=?, cim=?, telefon=? where mid=?");
+			
+			prstmt.setDate(1, datum);
+			prstmt.setString(2, megrendelo);
+			prstmt.setString(3, cim);
+			prstmt.setString(4, telefon);
+			prstmt.setInt(5, mid);
+			
+			prstmt.executeUpdate();  
+				
+			System.out.println("" + mid + ". megrendeles modositva: " + datum + " - " + megrendelo + " - " + cim + " - " + telefon);
+			prstmt.close();
+		}
+	
 	//adatok törlése 1.
 	public static void deleteMegrendeles(Connection conn, int mid) throws SQLException {
-		PreparedStatement prstmt2 = conn.prepareStatement("Delete er_kapcsolo where mid=?");
+		PreparedStatement prstmt2 = conn.prepareStatement("Delete erKapcsolo where mid=?");
 		PreparedStatement prstmt = conn.prepareStatement("Delete megrendeles where mid=?");
 		prstmt2.setInt(1, mid);
 		prstmt.setInt(1, mid);
@@ -277,7 +319,7 @@ public class Run {
 	public static void deleteEtel(Connection conn, int eid) throws SQLException {
 		PreparedStatement prstmt = conn.prepareStatement("Delete etel where eid=?");
 		PreparedStatement prstmt2 = conn.prepareStatement("Delete akciok where eid=?");
-		PreparedStatement prstmt3 = conn.prepareStatement("Delete er_kapcsolo where eid=?");
+		PreparedStatement prstmt3 = conn.prepareStatement("Delete erKapcsolo where eid=?");
 		prstmt.setInt(1, eid);
 		prstmt2.setInt(1, eid);
 		prstmt3.setInt(1, eid);
@@ -288,6 +330,20 @@ public class Run {
 		
 		System.out.println("Etel torolve: " + eid);
 	}
+	
+	//adatok törlése 3.
+		public static void deleteAkciok(Connection conn, int eid) throws SQLException {
+			PreparedStatement prstmt1 = conn.prepareStatement("Delete erKapcsolo where eid=?");
+			PreparedStatement prstmt2 = conn.prepareStatement("Delete akciok where eid=?");			
+			prstmt1.setInt(1, eid);
+			prstmt2.setInt(1, eid);
+
+			
+			prstmt1.executeUpdate(); 
+			prstmt2.executeUpdate();		  
+			
+			System.out.println("Akciok torolve: " + eid);
+		}
 
 	//adatok kiírása fájlba:
 	public static void etelToFile(Connection conn) throws SQLException{ 
@@ -369,7 +425,7 @@ public class Run {
 	}
 	
 	public static void dataDeleteAll(Connection conn) throws SQLException {
-		PreparedStatement prstmt = conn.prepareStatement("DROP TABLE er_kapcsolo");		
+		PreparedStatement prstmt = conn.prepareStatement("DROP TABLE erKapcsolo");		
 		ResultSet rs = prstmt.executeQuery();	
 				
 		prstmt = conn.prepareStatement("DROP TABLE akciok");		
@@ -385,9 +441,9 @@ public class Run {
 	}
 	
 	
-	public static void menu(Connection conn) throws SQLException { 
+	public static void menu(Connection conn) throws SQLException, ParseException { 
 		System.out.println("A program parancsai: ");
-		System.out.println("0: kilepes\n1: tablak letrehozasa\n2: tablak feltoltese alap adatokkal\n3: etel felvetele manualisan \n4: manualis lekerdezes\n5: etelek módosítása\n6: akciok modositasa\n7: megrendelesek törlése\n8: etelek törlése\n9: bonyolultabb automatikus lekerdezesek\n10: metadata lekérdezése\n11: adatok kiírása fájlba\n12: teljes adatbazis torlese ");
+		System.out.println("0: kilepes\n1: tablak letrehozasa\n2: tablak feltoltese alap adatokkal\n3: etel felvetele manualisan \n4: megrendeles felvetele manualisan\n5: akcio felvetele manualisan\6: manualis lekerdezes\n7: etelek módosítása\n8: akciok modositasa\n9: megrendelesek modositasa\n10: megrendelesek torlese\n11: etelek torlese\n12: akciok torlese\n13: bonyolultabb automatikus lekerdezesek\n14: metadata lekérdezése\n15: adatok kiírása fájlba\n16: teljes adatbazis torlese ");
 		boolean ok=true;
 		while(ok) {
 			
@@ -395,10 +451,12 @@ public class Run {
 			Scanner sc = new Scanner(System.in);
 			int executeCommand;
 			executeCommand = sc.nextInt();
-	
+			try {
 			switch (executeCommand) { 
 			case 1:
 			 	//táblák létrehozása
+				
+				
 				createÉtelTable(conn);
 				createAkciokTable(conn);
 				createMegrendelesTable(conn);
@@ -445,6 +503,7 @@ public class Run {
 	
 				break;
 			case 3:
+				
 				System.out.println("Uj etel azonositoja: ");
 				int etel=sc.nextInt();
 				System.out.println("Uj etel kisara: ");
@@ -459,6 +518,33 @@ public class Run {
 				addEtel(conn,new Etel(etel,kisar,nagyar,tipus,nev));
 				break;
 			case 4:
+				System.out.println("Uj megrendeles azonosítója: ");
+				int mid=sc.nextInt();
+				sc.nextLine();
+				System.out.println("Uj megrendeles idopontja: ");
+				String string = sc.nextLine();	
+				Date datum = java.sql.Date.valueOf(string);
+				System.out.println("Megrendelo neve: ");
+				String megrendelo = sc.nextLine();	
+				System.out.println("Uj cim: ");
+				String cim = sc.nextLine();	
+				System.out.println("Uj telefonszám: ");
+				String telefon = sc.nextLine();	
+				System.out.println("Melyik etel kerult megrendelesre: ");
+				int eid2=sc.nextInt();
+				addMegrendeles(conn,new Megrendeles(mid, datum, megrendelo, cim, telefon));
+				addErKapcsolo(conn, new ErKapcsolo(eid2, mid));
+				break;
+			case 5:
+				System.out.println("Uj akcio melyik etelhez tartozzon: ");
+				int eid=sc.nextInt();
+				System.out.println("Learazas merteke: ");
+				int learazas=sc.nextInt();
+				System.out.println("Ervenyesseg honapja: ");
+				int honap=sc.nextInt();
+				addAkciok(conn,new Akciok(eid, learazas, honap));
+				break;
+			case 6:
 				sc.nextLine();
 				//lekérdezés 1. - Bizonyos típusú ételek kiírása:
 				System.out.println("Milyen tipusu eteleket szeretnel lekerdezni?");
@@ -466,7 +552,7 @@ public class Run {
 				whereEtel(conn,ltipus);													
 				
 				break;
-			case 5:
+			case 7:
 				//Adatok módosítása:
 				//adatok módosítása 1.
 				System.out.println("Melyik azonositoju etelt szeretned modositani?");
@@ -483,7 +569,7 @@ public class Run {
 				updateEtelAr(conn, metel, mkisar, mnagyar, mtipus, mnev);
 				
 				break;
-			case 6:
+			case 8:
 				//Adatok módosítása:
 				//adatok módosítása 1.
 				System.out.println("Melyik azonositoju akciot szeretned modositani?");
@@ -498,21 +584,49 @@ public class Run {
 				updateAkciok(conn, makcio, mar, mhonap); 
 				
 				break;
-			case 7:
+			case 9:
+				//Adatok módosítása:
+				//adatok módosítása 1.
+				System.out.println("Melyik azonositoju megrendelest szeretned modositani?");
+				int mid2=sc.nextInt();
+								
+				//date conversion
+				sc.nextLine();
+				System.out.println("Uj datum: ");
+				String string2 = sc.nextLine();				
+				Date datum2 = java.sql.Date.valueOf(string2);
+				//---------------
+				System.out.println("Uj megrendelo");
+				String megrendelo2=sc.nextLine();
+				System.out.println("Uj cim");
+				String cim2=sc.nextLine();
+				System.out.println("Uj telefon");
+				String telefon2=sc.nextLine();
+
+				updateMegrendeles(conn, mid2, datum2, megrendelo2, cim2, telefon2);
+				break;
+			case 10:
 				//adatok törlése 1. - Megredeles - Azonosító szerint:
 				System.out.println("Melyik azonositoju megrendelest szeretned torolni?");
 				int tmegrendeles=sc.nextInt();
 				deleteMegrendeles(conn, tmegrendeles);
 					
 				break;				
-			case 8:				
+			case 11:				
 				//adatok törlése 2. - Etel - Azonosító szerint:
 				System.out.println("Melyik azonositoju etelt szeretned torolni?");
 				int tetel=sc.nextInt();
 				deleteEtel(conn, tetel);
 				
 				break;				
-			case 9:
+			case 12:
+				//adatok törlése 3. - Akciok - Azonosító szerint
+				System.out.println("Melyik azonositoju akciot szeretned torolni?");
+				int takciok=sc.nextInt();
+				deleteAkciok(conn, takciok);
+				
+				break;
+			case 13:
 				//lekérdezés 2. - Az év elsõ felében leárazáson lévõ ételek közül, a 2000-nál drágább kisárú ételek kiírása:
 				//két tábla közti lekédezés
 				whereElsoDraga(conn);					
@@ -521,17 +635,17 @@ public class Run {
 				//két tábla közötti szûrés
 				whereMegrendelo(conn, "Kis Pista");
 				break;
-			case 10:
+			case 14:
 				//metadata lekérdezése:
 				etelMetadata(conn);
 				
 				break;
-			case 11:
+			case 15:
 				//adatok kiírása fájlba:
 				etelToFile(conn);
 				
 				break;
-			case 12:
+			case 16:
 				//adatb torlese
 				dataDeleteAll(conn);
 				
@@ -540,8 +654,29 @@ public class Run {
 				ok=false;
 				break;
 			}
+			
+			} catch (InputMismatchException ex){
+				System.out.println("Nem megfelelo input, kerem probalja ujra!");
+			}
 		}
 		
+	}
+	
+	
+	
+	public static boolean tableExists(Connection conn,String tableName) throws SQLException {
+	    boolean found = false;
+	    DatabaseMetaData databaseMetaData = conn.getMetaData();
+	    ResultSet rs = databaseMetaData.getTables(null, null, tableName, null);
+	    while (rs.next()) {
+	        String name = rs.getString("TABLE_NAME");
+	        if (tableName.equals(name)) {
+
+	            found = true;
+	            break;
+	        }
+	    }
+	    return found;
 	}
 }
 
